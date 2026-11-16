@@ -25,15 +25,10 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Install & Build Web App with Relative Paths
+      - name: Install & Build Web App
         run: |
           npm install --legacy-peer-deps
           npx vite build --base=./
-
-      - name: Verify Build Output & Add Error Catcher
-        run: |
-          ls -la dist/
-          sed -i 's/<head>/<head><script>window.onerror=function(m,s,l){document.body.innerHTML="<div style=color:red;padding:20px;font-size:16px>"+m+" (Line "+l+")<\/div>";};<\/script>/' dist/index.html
 
       - name: Add Capacitor Android
         run: |
@@ -57,4 +52,3 @@ jobs:
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
