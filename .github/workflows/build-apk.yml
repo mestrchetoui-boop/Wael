@@ -25,6 +25,14 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Fix Relative Paths for Android
+        run: |
+          if [ -f vite.config.ts ]; then
+            sed -i "s/defineConfig({/defineConfig({ base: '.\/',/g" vite.config.ts
+          elif [ -f vite.config.js ]; then
+            sed -i "s/defineConfig({/defineConfig({ base: '.\/',/g" vite.config.js
+          fi
+
       - name: Install & Build Web App
         run: |
           npm install --legacy-peer-deps
