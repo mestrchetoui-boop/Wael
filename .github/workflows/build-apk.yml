@@ -25,17 +25,31 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Install & Build Web App
+      - name: Clean HTML & Build Standalone App
         run: |
           npm install --legacy-peer-deps
+          node -e '
+            const fs = require("fs");
+            let html = fs.readFileSync("index.html", "utf8");
+            html = html.replace(/<script type="importmap">[\s\S]*?<\/script>/gi, "");
+            fs.writeFileSync("index.html", html);
+          '
           npx vite build --base=./
 
-      - name: Add Capacitor Android
+      - name: Add Capacitor Android & Native USB MIDI
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
           npx cap init "Korg Oriental Commander" "com.waelchetoui.korgcommander" --web-dir dist
           npx cap add android
           npx cap sync android
+          cat << 'EOF' > android/app/src/main/assets/public/debug-fix.js
+          window.addEventListener("error", function(e) {
+            document.body.style.background = "#111";
+            document.body.style.color = "#ff5555";
+            document.body.innerHTML = "<div style=\"padding:20px;font-family:sans-serif\"><h3>Error:</h3>" + e.message + "</div>";
+          });
+          EOF
+          sed -i 's/<head>/<head><script src="debug-fix.js"><\/script>/' android/app/src/main/assets/public/index.html
 
       - name: Build Debug APK
         run: |
